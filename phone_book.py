@@ -1,69 +1,104 @@
-import sqlite3
+#!/usr/bin/python3
+from os import system,name
+# import sleep to show output for some time period 
+from time import sleep 
+  
+# define our clear function 
+def clear(): 
+  
+    # for windows 
+    if name == 'nt': 
+        _ = system('cls') 
+  
+    # for mac and linux(here, os.name is 'posix') 
+    else: 
+        _ = system('clear')
+import sys
+import json
+def listele():
+    with open("rehber.json") as file:
+            rehber=json.load(file)
+            print(f"{'#':<4}{'Name':<15}{'Last-Name':<15}{'Phone_number':<20}")    
+            for key in rehber:
+                print(f'{key:<2}--{rehber[key]["name"]:<15}{rehber[key]["last_name"]:<15}{rehber[key]["phone_number"]:<20}')
 
-con = sqlite3.connect("phone_book.db")
-cursor = con.cursor()
-def create_table():
-    cursor.execute("CREATE TABLE IF NOT EXISTS Book (S_No INTEGER ,Name TEXT,Surname TEXT,Phone_number TEXT)")
-
-def insert_new():
-    name = input("Enter name :")
-    surname = input("Enter surname :")
-    phone_num = input("Enter phone number :")
-    cursor.execute("SELECT * FROM Book")
-    data = cursor.fetchall()
-    num = len(data)+1
-    cursor.execute("INSERT INTO Book (S_No,Name,Surname,Phone_number) VALUES (?,?,?,?)",(num,name,surname,phone_num))
-    con.commit()
-def show_list():
-    cursor.execute("SELECT * FROM Book")
-    data = cursor.fetchall()
-    print("S.Nu: Name    Surname   Phone Number")
-    for record in data:
-        print(str(record).strip("()").replace(",",""))
-    con.commit()
-def update():
-    show_list()
-    seq = int(input("Enter the 'S_No' you want to update :"))
-    name = input("Enter new name :")
-    surname = input("Enter new surname :")
-    phone_num = input("Enter new phone number :")
-    cursor.execute("""UPDATE Book SET Name = ?, Surname = ?, Phone_number = ? WHERE S_No = ? """,(name,surname,phone_num,seq))
-    con.commit()
-
-def delete():
-    show_list()
-    seq = int(input("Enter the 'S_No' you want to delete :"))
-    cursor.execute("""DELETE FROM Book WHERE S_No = ?""",(seq, ))
-    cursor.execute("SELECT * FROM Book")
-    data = cursor.fetchall()
-    num = len(data)+1
-    for i in range(seq,num+1):
-        cursor.execute("""UPDATE Book SET S_No = ? WHERE S_No = ? """,(i,seq+1))
-        seq+=1
-    con.commit()
-def clear_list():
-    cursor.execute("DELETE FROM Book ")
-    con.commit()
-
-create_table()
-print("\n-------------------------Welcome Your Phone Book--------------------------\n")
 while True:
-    choice = input("Enter \n(E)--> Enter log, \n(U)--> Update log, \n(D)--> Delete log, \n(CL)--> Clear Lİst \n(SL)--> Show list \n(X)--> Exit     :").lower()
-    if choice == "e":
-        insert_new()
-    elif choice == "u":
-        update()
-    elif choice == "d":
-        delete()
-    elif choice == "cl":
-        clear_list()
-    elif choice == "sl":
-        show_list()
-    elif choice == "x":
-        print("\nSee you..\n")
+    print("-"*54)
+    print("[ 0 ]  - list of  records")
+    print("[ 1 ]  - new records")
+    print("[ 2 ]  - modify record")
+    print("[ 3 ]  - delete record")
+    print("[q/Q] - Quit")
+    print("-"*54)
+    opt=input("enter your choice:")
+    if opt == "0": # listing 
+        listele()        
+    elif opt=="1":  #new record
+        with open("rehber.json") as file:
+            rehber=json.load(file)
+
+        no = len(rehber)+1
+        rehber[str(no)]={"name": "", "last_name": "", "phone_number": ""}
+        rehber[str(no)]["name"] = input("Enter the Name:")
+        rehber[str(no)]["last_name"] = input("Enter the Last_Name:")
+        rehber[str(no)]["phone_number"] = input("Enter the phone_number:")
+        with open("rehber.json","w") as file:
+            j=json.dumps(rehber, indent=2)
+            file.write(j)
+            file.close()
+        clear()
+    elif opt == "2": #modify
+        listele()
+        with open("rehber.json") as file:
+            rehber=json.load(file)
+        i = str(input("Enter # to be modified:"))
+        # for key in list(rehber):
+        #     if rehber[key]["name"] == i.lower():
+        #         rehber[key]["name"] = input("Enter the Name:")
+        #         rehber[key]["last_name"] = input("Enter the Last_Name:")
+        #         rehber[key]["phone_number"] = input("Enter the phone_number:")
+        rehber[i]["name"] = input(f"change name of {rehber[i]['name']} as:")
+        rehber[i]["last_name"] = input(f"change last_name of {rehber[i]['last_name']} as:")
+        rehber[i]["phone_number"] = input(f"change phone_number of {rehber[i]['phone_number']} as:")
+        
+        with open("rehber.json","w") as file:
+            j=json.dumps(rehber, indent=2)
+            file.write(j)
+            file.close()
+        clear()
+
+    elif opt == "3": #deleting...
+        listele()
+        with open("rehber.json") as file:
+            rehber=json.load(file)
+        i=input("enter # to delete...")
+        for key in list(rehber):
+            if key == str(i) :
+                del rehber[key]
+        
+        with open("rehber.json","w") as file:
+            j=json.dumps(rehber, indent=2)
+            file.write(j)
+            file.close()
+
+
+        with open("rehber.json") as file:
+            rehber=json.load(file)
+        
+        i=1
+        yr={}
+        for v in rehber.values():
+            yr[str(i)] = v
+            i+=1
+        rehber = yr
+
+        with open("rehber.json","w") as file:
+            j=json.dumps(rehber, indent=2)
+            file.write(j)
+            file.close()
+        clear()
+        
+    elif opt.lower() == "q":
         break
     else:
-        print("Please enter valid entry..")
         continue
-
-con.close()
